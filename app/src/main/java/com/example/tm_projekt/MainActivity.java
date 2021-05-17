@@ -1,18 +1,21 @@
 package com.example.tm_projekt;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     ///////////////////////// variables \\\\\\\\\\\\\\\\\\\\\\\\
-    int LANGUAGE_TYPE = 1;
+    String LANGUAGE_TYPE = "polish";
 
     public static final String PREFERENCES = "preferences";
     public static final String LANGUAGE = "language";
+
 
 
     @Override
@@ -33,39 +36,77 @@ public class MainActivity extends AppCompatActivity {
     {
         Button button_change_language = findViewById(R.id.button_change_language);
 
-        if(LANGUAGE_TYPE == 1)
+        if(!LANGUAGE_TYPE.equals("english"))
         {
             button_change_language.setBackground(getDrawable(R.drawable.british_flag));
             savePreferences(LANGUAGE_TYPE);
-            LANGUAGE_TYPE = 2;
+            LANGUAGE_TYPE = "english";
+            Language_Change();
             return;
         }
 
-        if(LANGUAGE_TYPE == 2)
+        if(!LANGUAGE_TYPE.equals("polish"))
         {
             button_change_language.setBackground(getDrawable(R.drawable.polish_flag));
             savePreferences(LANGUAGE_TYPE);
-            LANGUAGE_TYPE = 1;
+            LANGUAGE_TYPE = "polish";
+            Language_Change();
             return;
         }
     }
 
+    public void onClick_Open_Goals(View view) {
+        Intent intent = new Intent(MainActivity.this,GoalsActivity.class);
+        startActivity(intent);
+    }
+
     ///////////////////// Shared Preferences \\\\\\\\\\\\\\\\\\\\
-    private void savePreferences(int language)
+    public void savePreferences(String language)
     {
         SharedPreferences sharedPref = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        editor.putInt(LANGUAGE,language);
+        editor.putString(LANGUAGE,language);
         editor.commit();
     }
 
-    private void LoadPreferences()
+    public void LoadPreferences()
     {
         SharedPreferences sharedPref = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        LANGUAGE_TYPE = sharedPref.getInt(LANGUAGE,2);
+        LANGUAGE_TYPE = sharedPref.getString(LANGUAGE,"english");
     }
+
+    //////// Language Change \\\\\\\\\
+    public void Language_Change()
+    {
+
+
+        Button button_goals = findViewById(R.id.button_goals);
+        Button button_charts = findViewById(R.id.button_charts);
+        Button button_weather = findViewById(R.id.button_weather);
+        Button button_bluetooth = findViewById(R.id.button_bluetooth);
+
+
+        if(LANGUAGE_TYPE.equals("polish"))
+        {
+            button_goals.setText("Twoje Cele");
+            button_charts.setText("Wykresy");
+            button_weather.setText("Warunki Atmosferyczne");
+            button_bluetooth.setText("Bluetooth");
+        }
+        if(LANGUAGE_TYPE.equals("english"))
+        {
+            button_goals.setText("Your Goals");
+            button_charts.setText("Charts");
+            button_weather.setText("Weather");
+            button_bluetooth.setText("Bluetooth");
+        }
+
+        //goalsActivity.Language_Change();
+
+    }
+
 
 }
