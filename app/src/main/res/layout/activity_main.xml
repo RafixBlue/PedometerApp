@@ -35,7 +35,7 @@
         android:layout_marginEnd="152dp"
         android:layout_marginBottom="80dp"
         android:text="Cele i Kroki"
-        android:onClick="onClick_Open_Goals"
+        android:onClick="onClick_Open_Activity_Goals"
         app:layout_constraintBottom_toTopOf="@+id/button_charts"
         app:layout_constraintEnd_toEndOf="parent" />
 

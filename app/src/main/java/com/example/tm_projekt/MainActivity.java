@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClick_Open_Goals(View view) {
+    public void onClick_Open_Activity_Goals(View view) {
         Intent intent = new Intent(MainActivity.this,GoalsActivity.class);
         startActivity(intent);
     }
@@ -78,16 +78,14 @@ public class MainActivity extends AppCompatActivity {
         LANGUAGE_TYPE = sharedPref.getString(LANGUAGE,"english");
     }
 
-    //////// Language Change \\\\\\\\\
+    /////////////////////// Language Change \\\\\\\\\\\\\\\\\\\\\\\\\
     public void Language_Change()
     {
-
 
         Button button_goals = findViewById(R.id.button_goals);
         Button button_charts = findViewById(R.id.button_charts);
         Button button_weather = findViewById(R.id.button_weather);
         Button button_bluetooth = findViewById(R.id.button_bluetooth);
-
 
         if(LANGUAGE_TYPE.equals("polish"))
         {
@@ -103,8 +101,6 @@ public class MainActivity extends AppCompatActivity {
             button_weather.setText("Weather");
             button_bluetooth.setText("Bluetooth");
         }
-
-        //goalsActivity.Language_Change();
 
     }
 
