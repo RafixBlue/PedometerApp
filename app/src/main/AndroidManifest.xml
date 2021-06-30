@@ -3,6 +3,7 @@
     package="com.example.tm_projekt">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
@@ -12,7 +13,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TMProjekt">
-        <activity android:name=".BluetoothActivity"></activity>
+        <activity
+            android:name=".GraphActivity"
+            android:label="@string/title_activity_graph"
+            android:theme="@style/Theme.TMProjekt.NoActionBar"></activity>
+        <activity android:name=".WeatherActivity" />
+        <activity android:name=".BluetoothActivity" />
         <activity android:name=".GoalsActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

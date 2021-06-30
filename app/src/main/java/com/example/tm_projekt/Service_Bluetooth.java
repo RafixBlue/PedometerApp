@@ -22,6 +22,7 @@ public class Service_Bluetooth extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         LoadPreferences();
         createNotificationChannel();
 
@@ -38,8 +39,6 @@ public class Service_Bluetooth extends Service {
         startForeground(1,notification);
 
         return super.onStartCommand(intent, flags, startId);
-
-
 
     }
 

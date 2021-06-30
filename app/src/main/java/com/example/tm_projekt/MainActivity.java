@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+
 public class MainActivity extends AppCompatActivity {
     ///////////////////////// variables \\\\\\\\\\\\\\\\\\\\\\\\
     String LANGUAGE_TYPE = "polish";
@@ -25,6 +27,11 @@ public class MainActivity extends AppCompatActivity {
 
         LoadPreferences();
         ChangeLanguageButton();
+
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+
+
+
     }
 
     ////////////////////// Buttons Events \\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -60,6 +67,20 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onClick_Open_Activity_Bluetooth(View view) {
+        Intent intent = new Intent(MainActivity.this,BluetoothActivity.class);
+        startActivity(intent);
+    }
+
+    public void onClick_Open_Activity_Weather(View view) {
+        Intent intent = new Intent(MainActivity.this,WeatherActivity.class);
+        startActivity(intent);
+    }
+
+    public void onClick_Open_Activity_Graph(View view) {
+        Intent intent = new Intent(MainActivity.this,GraphActivity.class);
+        startActivity(intent);
+    }
     ///////////////////// Shared Preferences \\\\\\\\\\\\\\\\\\\\
     public void savePreferences(String language)
     {
