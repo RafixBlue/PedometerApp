@@ -12,15 +12,14 @@ import android.widget.TextView;
 
 public class GoalsActivity extends AppCompatActivity {
 
+    //Todo: Add Monthly step goals
+    //Todo: Read number of steps
+
     String LANGUAGE_TYPE = "no";
-
-
 
     public static final String PREFERENCES = "preferences";
     public static final String LANGUAGE = "language";
     public static final String GOAL = "goal";
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +34,8 @@ public class GoalsActivity extends AppCompatActivity {
 
         TextView goal = findViewById(R.id.TextNumber_Goal);
         //goal.setText(0);
-
-
-
+        System.out.println("30");
     }
-
 
 
     ///////////////////// Shared Preferences \\\\\\\\\\\\\\\\\\\\
@@ -64,21 +60,24 @@ public class GoalsActivity extends AppCompatActivity {
     //////// Language Change \\\\\\\\\
     public void Language_Change()
     {
-        TextView textView = findViewById(R.id.textView);
+        //TextView textView = findViewById(R.id.textView);
 
         if(LANGUAGE_TYPE.equals("polish"))
         {
-            textView.setText("English");
+            //textView.setText("English");
         }
 
         if(LANGUAGE_TYPE.equals("english"))
         {
-            textView.setText("Polski");
+            //textView.setText("Polski");
         }
 
     }
 
     public void onClick_start_intent(View view) {
+
+        TextView goal = findViewById(R.id.TextNumber_Goal);
+        savePreferences(Integer.parseInt(goal.getText().toString()));
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
@@ -99,10 +98,5 @@ public class GoalsActivity extends AppCompatActivity {
 
     public void onClick_back(View view) {
         finish();
-    }
-
-    public void onClick_aply_goal(View view) {
-        TextView goal = findViewById(R.id.TextNumber_Goal);
-        savePreferences(Integer.parseInt(goal.getText().toString()));
     }
 }

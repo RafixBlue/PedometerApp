@@ -33,6 +33,8 @@ import static android.content.ContentValues.TAG;
 
 public class BluetoothActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
+    //Todo: Connection check when weather check
+
     public static final int BLUETOOTH_REQ_CODE = 1;
     static List<String> spinner_bluetooth_name = new ArrayList<String>(); //zmianna przechowująca listę nazw sparowanych urządzeń
     static List<String> spinner_bluetooth_adress = new ArrayList<String>();//zmianna przechowująca listę adresów sparowanych urządzeń
@@ -68,7 +70,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public static final String TIME = "time";
 
     Database db;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +139,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                                 //zapisz do bazy average 3do6 liczby
                                 tv_calibration.setText("Zakończono kalibrację");
                                 db.replace_AVG(sarduinoMsg.substring(3,6));
-
                             }
                             else if(sarduinoMsg.substring(0,3).equals("STE"))
                             {
@@ -162,6 +162,41 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                                 else if(Integer.parseInt(mm) < 45 && Integer.parseInt(mm) >= 30) { mm="30"; }
                                 else if(Integer.parseInt(mm) >= 45) { mm="45"; }
                                 db.replace(d,m,y,mm,h,sarduinoMsg.substring(3));
+
+
+                                SimpleDateFormat formatter_X = new SimpleDateFormat("yyyy_MM_dd");
+                                Cursor res=db.get_daysteps(formatter_X.format(now));
+                                res.moveToFirst();
+                                String steps = res.getString(res.getColumnIndex("Steps_Day"));
+                                //steps= steps+sarduinoMsg.substring(3);
+                                int isteps =0;
+                                System.out.println(sarduinoMsg.substring(3));
+
+                                isteps=Integer.parseInt(steps);
+
+
+
+                                db.replace_kroki(sarduinoMsg.substring(3));
+                                Cursor res2 = db.get_steps();
+                                res2.moveToFirst();
+                                int steps2 = res2.getInt(res2.getColumnIndex("kroki"));
+
+
+                                if(!steps.equals("null0"))
+                                {
+                                     isteps = isteps + steps2;
+                                }
+                                else{
+                                    isteps = steps2;
+                                }
+
+                                //TODO: różne wersje językowe napisów
+
+                                System.out.println(String.valueOf(isteps));
+
+                                db.replace_day(d,m,y,mm,h, String.valueOf(isteps));
+
+
                                 test_connection = false;
                                 test_connection2 = false;
                             }
@@ -207,8 +242,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             SimpleDateFormat formatter = new SimpleDateFormat("mm");
             Date now = new Date();
             String time = formatter.format(now);//like 2020_12_14.txt
-
-
 
             if(test_connection == true)
             {
@@ -330,10 +363,12 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
 
         LANGUAGE_TYPE = sharedPref.getString(LANGUAGE,"english");
     }
-
-
+    @Override
+    public void onBackPressed() {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     ////////////////////////////Bluetooth łączenie//////////////////////////////////////////////
     public class CreateConnectThread extends Thread {
 

@@ -12,6 +12,11 @@ import android.widget.TextView;
 import com.jjoe64.graphview.GraphView;
 
 public class MainActivity extends AppCompatActivity {
+
+    //Todo: Fix design
+    //Todo: Night Mode
+    //Todo: Languages
+
     ///////////////////////// variables \\\\\\\\\\\\\\\\\\\\\\\\
     String LANGUAGE_TYPE = "polish";
 
@@ -29,8 +34,6 @@ public class MainActivity extends AppCompatActivity {
         ChangeLanguageButton();
 
         GraphView graph = (GraphView) findViewById(R.id.graph);
-
-
 
     }
 
@@ -78,9 +81,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick_Open_Activity_Graph(View view) {
-        Intent intent = new Intent(MainActivity.this,GraphActivity.class);
+        Intent intent = new Intent(MainActivity.this,CalendarActivity.class);
         startActivity(intent);
     }
+
+
     ///////////////////// Shared Preferences \\\\\\\\\\\\\\\\\\\\
     public void savePreferences(String language)
     {
