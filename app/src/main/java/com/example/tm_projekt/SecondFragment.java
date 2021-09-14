@@ -1,20 +1,15 @@
 package com.example.tm_projekt;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.widget.TextView;
-
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.tm_projekt.databinding.FragmentSecondBinding;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class SecondFragment extends Fragment {
 
@@ -28,7 +23,6 @@ public class SecondFragment extends Fragment {
 
         binding = FragmentSecondBinding.inflate(inflater, container, false);
         return binding.getRoot();
-
 
 
     }

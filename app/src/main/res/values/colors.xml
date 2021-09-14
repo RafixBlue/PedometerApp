@@ -7,5 +7,10 @@
     <color name="teal_700">#FF6200EE</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray">#FFFFFFFF</color>
     <color name="Background_Light_Colour">#AAA7CC</color>
+    <color name="test">#FF000000</color>
+    <color name="background_graph">#FFFFFF</color>
+    <color name="light_gray">#6F7375</color>
+    <color name="List_color">#BEE4E1E1</color>
 </resources>

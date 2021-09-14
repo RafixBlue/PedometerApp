@@ -1,12 +1,11 @@
 package com.example.tm_projekt;
 
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 
 
 public class WeatherActivity extends AppCompatActivity {
@@ -30,12 +29,11 @@ public class WeatherActivity extends AppCompatActivity {
 
     }
 
-    public void LoadPreferences()
-    {
+    public void LoadPreferences() {
         SharedPreferences sharedPref = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        LANGUAGE_TYPE = sharedPref.getString(LANGUAGE,"english");
+        LANGUAGE_TYPE = sharedPref.getString(LANGUAGE, "english");
     }
 
     public void Weather_Click(View view) {
@@ -47,15 +45,14 @@ public class WeatherActivity extends AppCompatActivity {
         TextView TV_PRES = findViewById(R.id.TV_PRES);
         TextView TV_TIME = findViewById(R.id.TV_TIME);
 
-        TV_TEMP.setText(sharedPref.getString(TEMPERATURE,"0"));
-        TV_HUMI.setText(sharedPref.getString(HUMIDITY,"0"));
-        TV_PRES.setText(sharedPref.getString(PRESSURE,"0"));
-        TV_TIME.setText(sharedPref.getString(TIME,"0"));
+        TV_TEMP.setText(sharedPref.getString(TEMPERATURE, "0"));
+        TV_HUMI.setText(sharedPref.getString(HUMIDITY, "0"));
+        TV_PRES.setText(sharedPref.getString(PRESSURE, "0"));
+        TV_TIME.setText(sharedPref.getString(TIME, "0"));
 
     }
 
-    public void Language_Change()
-    {
+    public void Language_Change() {
 
         TextView temp = findViewById(R.id.textView10);
         TextView humi = findViewById(R.id.textView11);
@@ -63,16 +60,14 @@ public class WeatherActivity extends AppCompatActivity {
         TextView time = findViewById(R.id.textView14);
         Button refresh = findViewById(R.id.button_refresh);
 
-        if(LANGUAGE_TYPE.equals("polish"))
-        {
+        if (LANGUAGE_TYPE.equals("polish")) {
             temp.setText("Temperature");
             humi.setText("Humidity");
             press.setText("Pressure");
             time.setText("Measurement Time:");
             refresh.setText("Refresh");
         }
-        if(LANGUAGE_TYPE.equals("english"))
-        {
+        if (LANGUAGE_TYPE.equals("english")) {
             temp.setText("Temperatura");
             humi.setText("Wilgotność");
             press.setText("Ciśnienie");

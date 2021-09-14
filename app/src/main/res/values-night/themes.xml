@@ -4,7 +4,8 @@
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_200</item>
         <item name="colorPrimaryDark">@color/purple_700</item>
-        <item name="colorAccent">@color/teal_200</item>
+        <item name="colorAccent">@color/test</item>
+        <item name="android:color">@color/test</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CalenderViewCustom" parent="Theme.AppCompat">
+        <item name="colorAccent">@color/test</item>
+        <item name="colorPrimary">@color/test</item>
+    </style>
+
+    <style name="CalenderViewDateCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/test</item>
+        <item name="android:weekNumberColor">@color/test</item>
+    </style>
+
+    <style name="CalenderViewWeekCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/test</item>
+    </style>
+
+    <style name="GraphViewCustom" parent="Theme.AppCompat">
+        <item name="colorAccent">@color/background_graph</item>
+        <item name="colorPrimary">@color/background_graph</item>
+    </style>
+
+    <style name="text" parent="Theme.AppCompat">
+        <item name="colorAccent">@color/background_graph</item>
+        <item name="colorPrimary">@color/background_graph</item>
+    </style>
+
+</resources>

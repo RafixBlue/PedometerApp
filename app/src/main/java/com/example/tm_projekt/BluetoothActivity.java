@@ -1,16 +1,20 @@
 package com.example.tm_projekt;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,40 +40,81 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     //Todo: Connection check when weather check
 
     public static final int BLUETOOTH_REQ_CODE = 1;
-    static List<String> spinner_bluetooth_name = new ArrayList<String>(); //zmianna przechowująca listę nazw sparowanych urządzeń
-    static List<String> spinner_bluetooth_adress = new ArrayList<String>();//zmianna przechowująca listę adresów sparowanych urządzeń
-
-    BluetoothAdapter my_Bluetooth_Adapter = BluetoothAdapter.getDefaultAdapter();//adapter bluetooth
-    private String deviceName = null; //nazwa wybranego urządzenia
-    private String deviceAddress; //adres wybranego urządzenia
-
-    /////////////////////////bluetooth łączenie zmienne////////////////////////
-    public static BluetoothSocket mmSocket;
-    public static ConnectedThread connectedThread;
-    public static CreateConnectThread createConnectThread;
-
-    private final static int CONNECTING_STATUS = 1;
-    private final static int MESSAGE_READ = 2;
-    static String text3 ="test";
-    boolean test_connection = false;
-    boolean test_connection2 = false;
-
-    public static Handler handler;
-    public static Handler Timer = new Handler(Looper.getMainLooper());
-
-    public static boolean send_AVG = false;
-    public static boolean conection_avg = false;
-
-    String LANGUAGE_TYPE = "polish";
-
     public static final String PREFERENCES = "preferences";
     public static final String TEMPERATURE = "temperature";
     public static final String HUMIDITY = "humidity";
     public static final String PRESSURE = "pressure";
     public static final String LANGUAGE = "language";
     public static final String TIME = "time";
+    public static final String GOAL = "goal";
+    private final static int CONNECTING_STATUS = 1;
+    private final static int MESSAGE_READ = 2;
+    /////////////////////////bluetooth łączenie zmienne////////////////////////
+    public static BluetoothSocket mmSocket;
+    public static ConnectedThread connectedThread;
+    public static CreateConnectThread createConnectThread;
+    public static Handler handler;
+    public static Handler Timer = new Handler(Looper.getMainLooper());
 
+    public static boolean send_AVG = false;
+    public static boolean conection_avg = false;
+    static List<String> spinner_bluetooth_name = new ArrayList<String>(); //zmianna przechowująca listę nazw sparowanych urządzeń
+    static List<String> spinner_bluetooth_adress = new ArrayList<String>();//zmianna przechowująca listę adresów sparowanych urządzeń
+    static String text3 = "test";
+    BluetoothAdapter my_Bluetooth_Adapter = BluetoothAdapter.getDefaultAdapter();//adapter bluetooth
+    boolean previous_connection_status = false;
+    String LANGUAGE_TYPE = "polish";
     Database db;
+    int CHOOSEN_GOAL = 0;
+    private String deviceName = null; //nazwa wybranego urządzenia
+    private String deviceAddress; //adres wybranego urządzenia
+    private final Runnable mToastRunnable = new Runnable() {
+        @Override
+        public void run() {//Metoda nieustannie działajaca w tle aplikacji. Co pietnascie minut wysyła do Rejestratora prosbe o wysłanie wyniku pomiaru kroków jednoczesnie sprawdzajac czy urzadzenie odpowiedziało na wiadomosc. Jezeli nie odpowiedziało to w textboxie wyswietlany jest komunikat o utraconym połaczeniu. Metoda jest odpowiedzialna równiez za odczytanie z tabeli Parameters w bazie danych informacji o wyniku poprzedniej kalibracji i wysłanie jej do Rejestratora.
+
+            SimpleDateFormat formatter = new SimpleDateFormat("mm");
+
+            String time = formatter.format(new Date());//like 2020_12_14.txt
+
+            if (send_AVG == false && conection_avg == true) {
+                Cursor res = db.getdata();
+                res.moveToFirst();
+                String avg = res.getString(res.getColumnIndex("AVG_MAX"));
+                try {
+                    connectedThread.write("2" + avg);
+                } catch (Exception e) {
+                    Log.e(TAG, "not sent", e);
+                }
+                send_AVG = true;
+                conection_avg = false;
+            }
+
+            Timer.postDelayed(this, 60000);
+
+            if (previous_connection_status == true) {
+                if (connectedThread.Connection_Status() != previous_connection_status) {
+                    TextView tv_connection = findViewById(R.id.Text_View_Connect);
+                    tv_connection.setText("Utracono połączenie " + deviceName); //TODO notification about lost connection
+                }
+                previous_connection_status = connectedThread.Connection_Status();
+            }
+
+            if (time.equals("00") || time.equals("15") || time.equals("30") || time.equals("45")) {
+                try {
+                    connectedThread.write("3");
+                } catch (Exception e) {
+                }
+            }
+            if (!time.equals("00") || !time.equals("15") || !time.equals("30") || !time.equals("45")) {
+                try {
+                    connectedThread.write("4");
+                } catch (Exception e) {
+                    Log.e(TAG, "doesnt work", e);
+                }
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,39 +131,46 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         spinner_bluetooth_adress.clear();
 
         ////usunac///
-        db=new Database(this);
-        db.insert_AVG("User","0");
+        db = new Database(this);
+        db.insert_AVG("User", "0");
         try {
-            db.insert("07","01","2021");
-        }catch (Exception e){}
-
-        if(!my_Bluetooth_Adapter.isEnabled())
-        {
-            Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(bluetoothIntent,BLUETOOTH_REQ_CODE );
+            db.insert("07", "01", "2021");
+        } catch (Exception e) {
         }
 
-        Set<BluetoothDevice> paired_Devices  = my_Bluetooth_Adapter.getBondedDevices();
+        if (!my_Bluetooth_Adapter.isEnabled()) {
+            Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(bluetoothIntent, BLUETOOTH_REQ_CODE);
+        }
+
+        Set<BluetoothDevice> paired_Devices = my_Bluetooth_Adapter.getBondedDevices();
 
         Spinner spin = findViewById(R.id.spinner);
         spin.setOnItemSelectedListener(this);
-        for(BluetoothDevice bt : paired_Devices) { spinner_bluetooth_adress.add(bt.getAddress());spinner_bluetooth_name.add(bt.getName()); }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,spinner_bluetooth_name);
+
+        for (BluetoothDevice bt : paired_Devices) {
+            spinner_bluetooth_adress.add(bt.getAddress());
+            spinner_bluetooth_name.add(bt.getName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, spinner_bluetooth_name);
 
         spin.setAdapter(adapter);
 
+
         mToastRunnable.run();
 
-        ////////////////////handler bluetooth
+
+        ////////////////////handler bluetooth////////////////////////////////
         handler = new Handler(Looper.getMainLooper()) {
             @Override
-            public void handleMessage(Message msg){//Obiekt odpowiedzialny za odczytywanie wiadomosci przekazywanych przez watki. Odbiera informacje o statusie połaczenia(czy udało sie je uzyskac czy nie) i wyswietla ja w odpowiednim textboxie. Ta metoda równiez odczytuje wiadomosci zawierajace wyniki pomiarów kroków i kalibracji, po odczytaniu zapisuje je w bazie danych.
-                switch (msg.what){
+            public void handleMessage(Message msg) {//Obiekt odpowiedzialny za odczytywanie wiadomosci przekazywanych przez watki. Odbiera informacje o statusie połaczenia(czy udało sie je uzyskac czy nie) i wyswietla ja w odpowiednim textboxie. Ta metoda równiez odczytuje wiadomosci zawierajace wyniki pomiarów kroków i kalibracji, po odczytaniu zapisuje je w bazie danych.
+                switch (msg.what) {
                     case CONNECTING_STATUS:
-                        switch(msg.arg1){
+                        //TODO Languages
+                        switch (msg.arg1) {
                             case 1:
                                 tv_connection.setText("Połączono z " + deviceName);
-                                conection_avg =true;
+                                conection_avg = true;
                                 break;
                             case -1:
                                 tv_connection.setText("Nie udało się uzyskać połączenia");
@@ -127,54 +179,58 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                         break;
 
                     case MESSAGE_READ:
+
                         String arduinoMsg = msg.obj.toString();
                         String sarduinoMsg = "000000000";
-                        sarduinoMsg= arduinoMsg;
+                        sarduinoMsg = arduinoMsg;
+
                         SharedPreferences sharedPref = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
-                        if(sarduinoMsg.length()>=3)
-                        {
-                            if(sarduinoMsg.substring(0,3).equals("AVG"))
-                            {
+
+                        if (sarduinoMsg.length() >= 3) {
+
+                            if (sarduinoMsg.startsWith("AVG")) {
                                 //zapisz do bazy average 3do6 liczby
-                                tv_calibration.setText("Zakończono kalibrację");
-                                db.replace_AVG(sarduinoMsg.substring(3,6));
-                            }
-                            else if(sarduinoMsg.substring(0,3).equals("STE"))
-                            {
-                                Date now = new Date();
-                                SimpleDateFormat fday = new SimpleDateFormat("dd");
-                                SimpleDateFormat fmonth = new SimpleDateFormat("MM");
-                                SimpleDateFormat fyear = new SimpleDateFormat("yyyy");
-                                SimpleDateFormat fmin = new SimpleDateFormat("mm");
-                                SimpleDateFormat fh = new SimpleDateFormat("HH");
-                                String d = fday.format(now);
-                                String m = fmonth.format(now);
-                                String y = fyear.format(now);
-                                String mm = fmin.format(now);
-                                String h = fh.format(now);
-                                try{
-                                    db.insert(d,m,y);
+                                if (LANGUAGE_TYPE.equals("polish")) {
+                                    tv_calibration.setText("Calibration compleated");
                                 }
-                                catch (Exception e){}
-                                if(Integer.parseInt(mm) < 15) { mm="00"; }
-                                else if(Integer.parseInt(mm) < 30 && Integer.parseInt(mm) >= 15) { mm="15"; }
-                                else if(Integer.parseInt(mm) < 45 && Integer.parseInt(mm) >= 30) { mm="30"; }
-                                else if(Integer.parseInt(mm) >= 45) { mm="45"; }
-                                db.replace(d,m,y,mm,h,sarduinoMsg.substring(3));
+                                if (LANGUAGE_TYPE.equals("english")) {
+                                    tv_calibration.setText("Zakończono kalibrację");
+                                }
 
+                                //ToDo language
+                                db.replace_AVG(sarduinoMsg.substring(3, 6));
+                            }
 
-                                SimpleDateFormat formatter_X = new SimpleDateFormat("yyyy_MM_dd");
-                                Cursor res=db.get_daysteps(formatter_X.format(now));
+                            if (sarduinoMsg.startsWith("STE")) {
+                                Date now = new Date();
+
+                                String day_time_now = new SimpleDateFormat("dd").format(now);                                            //SimpleDateFormat fday = new SimpleDateFormat("dd"); String day_time_now = fday.format(now);
+                                String month_time_now = new SimpleDateFormat("MM").format(now);                                          //SimpleDateFormat fmonth = new SimpleDateFormat("MM"); String month_time_now = fmonth.format(now);
+                                String year_time_now = new SimpleDateFormat("yyyy").format(now);                                         //SimpleDateFormat fyear = new SimpleDateFormat("yyyy"); String year_time_now = fyear.format(now);
+                                String minutes_time_now = new SimpleDateFormat("mm").format(now);                                        //SimpleDateFormat fmin = new SimpleDateFormat("mm"); String minutes_time_now = fmin.format(now);
+                                String hours_time_now = new SimpleDateFormat("HH").format(now);                                          //SimpleDateFormat fh = new SimpleDateFormat("HH"); String hours_time_now = fh.format(now);
+
+                                try {
+                                    db.insert(day_time_now, month_time_now, year_time_now);
+                                } catch (Exception e) {
+                                }
+
+                                minutes_time_now = round_quarter_minute(Integer.parseInt(minutes_time_now));
+
+                                //convert_to_quarter_minutes
+
+                                db.replace(day_time_now, month_time_now, year_time_now, minutes_time_now, hours_time_now, sarduinoMsg.substring(3));
+
+                                //SimpleDateFormat formatter_X = new SimpleDateFormat("yyyy_MM_dd");
+
+                                Cursor res = db.get_daysteps(new SimpleDateFormat("yyyy_MM_dd").format(now));
                                 res.moveToFirst();
                                 String steps = res.getString(res.getColumnIndex("Steps_Day"));
-                                //steps= steps+sarduinoMsg.substring(3);
-                                int isteps =0;
-                                System.out.println(sarduinoMsg.substring(3));
+                                //int isteps =0;
+                                //System.out.println(sarduinoMsg.substring(3));
 
-                                isteps=Integer.parseInt(steps);
-
-
+                                int isteps = Integer.parseInt(steps);
 
                                 db.replace_kroki(sarduinoMsg.substring(3));
                                 Cursor res2 = db.get_steps();
@@ -182,44 +238,39 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                                 int steps2 = res2.getInt(res2.getColumnIndex("kroki"));
 
 
-                                if(!steps.equals("null0"))
-                                {
-                                     isteps = isteps + steps2;
-                                }
-                                else{
+                                if (!steps.equals("null0")) {
+                                    isteps = isteps + steps2;
+                                } else {
                                     isteps = steps2;
                                 }
 
-                                //TODO: różne wersje językowe napisów
+                                //TODO: różne wersje językowe napisów in replace add goal
 
-                                System.out.println(String.valueOf(isteps));
+                                //System.out.println(String.valueOf(isteps));
 
-                                db.replace_day(d,m,y,mm,h, String.valueOf(isteps));
+                                db.replace_day(day_time_now, month_time_now, year_time_now, minutes_time_now, hours_time_now, String.valueOf(isteps), String.valueOf(CHOOSEN_GOAL));
 
-
-                                test_connection = false;
-                                test_connection2 = false;
-                            }
-                            else if(sarduinoMsg.substring(0,3).equals("TEM"))
-                            {
-
-                                editor.putString(TEMPERATURE,sarduinoMsg.substring(3));
-
-                                editor.commit();
+                                updateNotification(String.valueOf(isteps));
 
                             }
-                            else if(sarduinoMsg.substring(0,3).equals("HUM"))
-                            {
-                                editor.putString(HUMIDITY,sarduinoMsg.substring(3));
 
+                            if (sarduinoMsg.startsWith("TEM")) {
+
+                                editor.putString(TEMPERATURE, sarduinoMsg.substring(3));
                                 editor.commit();
                             }
-                            else if(sarduinoMsg.substring(0,3).equals("PRE"))
-                            {
-                                SimpleDateFormat form = new SimpleDateFormat("mm:HH dd/MM/yyyy");
 
-                                editor.putString(PRESSURE,sarduinoMsg.substring(3));
-                                editor.putString(TIME,form.format(new Date()));
+                            if (sarduinoMsg.startsWith("HUM")) {
+
+                                editor.putString(HUMIDITY, sarduinoMsg.substring(3));
+                                editor.commit();
+                            }
+
+                            if (sarduinoMsg.startsWith("PRE")) {
+
+                                SimpleDateFormat form = new SimpleDateFormat("HH:mm dd/MM/yyyy");
+                                editor.putString(PRESSURE, sarduinoMsg.substring(3));
+                                editor.putString(TIME, form.format(new Date()));
                                 editor.commit();
                             }
                         }
@@ -227,86 +278,73 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                 }
             }
         };
+
+    }
+
+    String round_quarter_minute(int min) {
+        if (min < 15) {
+            return "00";
+        }
+        if (min < 30 && min >= 15) {
+            return "15";
+        }
+        if (min < 45 && min >= 30) {
+            return "30";
+        }
+        if (min >= 45) {
+            return "45";
+        }
+
+        return "error";
+    }
+
+    private void updateNotification(String steps_day) {
+        String text = "Progress:";
+        if (LANGUAGE_TYPE.equals("polish")) {
+            text = "Progress:";
+        }
+        if (LANGUAGE_TYPE.equals("english")) {
+            text = "Wykonano:";
+        }
+
+        Notification notification = new NotificationCompat.Builder(this, "ChannelID")
+                .setContentTitle(text)
+                .setContentText(steps_day + "/" + CHOOSEN_GOAL)
+                .setSmallIcon(R.mipmap.ic_launcher).build();
+        //.setContentIntent(pendingintent).build();
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(1, notification);
     }
 
     public void startRepeating(View v) {//Zatrzymuje metode run.
         mToastRunnable.run();
     }
+
     public void stopRepeating(View v) {
         Timer.removeCallbacks(mToastRunnable);
     }
-    private Runnable mToastRunnable = new Runnable() {
-        @Override
-        public void run() {//Metoda nieustannie działajaca w tle aplikacji. Co pietnascie minut wysyła do Rejestratora prosbe o wysłanie wyniku pomiaru kroków jednoczesnie sprawdzajac czy urzadzenie odpowiedziało na wiadomosc. Jezeli nie odpowiedziało to w textboxie wyswietlany jest komunikat o utraconym połaczeniu. Metoda jest odpowiedzialna równiez za odczytanie z tabeli Parameters w bazie danych informacji o wyniku poprzedniej kalibracji i wysłanie jej do Rejestratora.
-
-            SimpleDateFormat formatter = new SimpleDateFormat("mm");
-            Date now = new Date();
-            String time = formatter.format(now);//like 2020_12_14.txt
-
-            if(test_connection == true)
-            {
-                if(test_connection2 == true)
-                {
-                    TextView tv_connection = findViewById(R.id.Text_View_Connect);
-                    tv_connection.setText("Utracono połączenie " + deviceName);
-                }
-                test_connection2 = true;
-            }
-
-            if(send_AVG == false && conection_avg == true)
-            {
-                TextView tv = findViewById(R.id.kalibracja_textview);
-                Cursor res=db.getdata();
-                res.moveToFirst();
-                String avg = res.getString(res.getColumnIndex("AVG_MAX"));
-                if(avg.equals("0"))
-                {
-                    send_AVG = true;
-                }
-                else
-                {
-                    try{
-                        connectedThread.write("2" + avg);
-                    }catch(Exception e){ }
-                    send_AVG = true;
-                }
-            }
-            Timer.postDelayed(this, 60000);
-            if(time.equals("00")||time.equals("15")||time.equals("30")||time.equals("45"))
-            {
-                try{
-                    connectedThread.write("3");
-                    test_connection = true;
-
-                }catch(Exception e){ }
-            }
-            else
-            {
-                try{
-                    connectedThread.write("4");
-                }catch(Exception e){ }
-            }
-
-        }
-    };
-
 
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {//Odczytuje nazwe i adres sparowanego urzadzenia wybranego z listy i zapisuje je do odpowiednich zmiennych.
-        deviceAddress=spinner_bluetooth_adress.get(position);
+        deviceAddress = spinner_bluetooth_adress.get(position);
         deviceName = spinner_bluetooth_name.get(position);
     }
 
-    public void onNothingSelected(AdapterView<?> parent) { }
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
 
     public void RefreshList_Click(View view) {//Odswieza lub uzupełnia liste sparowanych urzadzen.
-        Set<BluetoothDevice> paired_Devices  = my_Bluetooth_Adapter.getBondedDevices();
+        Set<BluetoothDevice> paired_Devices = my_Bluetooth_Adapter.getBondedDevices();
         Spinner spin = findViewById(R.id.spinner);
         spin.setAdapter(null);
         spin.setOnItemSelectedListener(this);
         spinner_bluetooth_name.clear();
         spinner_bluetooth_adress.clear();
-        for(BluetoothDevice bt : paired_Devices) { spinner_bluetooth_adress.add(bt.getAddress());spinner_bluetooth_name.add(bt.getName()); }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,spinner_bluetooth_name);
+        for (BluetoothDevice bt : paired_Devices) {
+            spinner_bluetooth_adress.add(bt.getAddress());
+            spinner_bluetooth_name.add(bt.getName());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, spinner_bluetooth_name);
         spin.setAdapter(adapter);
 
     }
@@ -314,25 +352,24 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public void Calibration_Click(View view) {//Przesyła wiadomosc do Rejestratora, która rozpoczyna kalibracje.
 
         TextView tv = findViewById(R.id.kalibracja_textview);
-        try{
+        try {
             connectedThread.write("1");
             tv.setText("Rozpoczeto kalibracje!");
 
-        }catch(Exception e){ tv.setText("Błąd kalibracji"); }
+        } catch (Exception e) {
+            tv.setText("Błąd kalibracji");
+        }
     }
 
     public void Connect_Click(View view) {//Łaczy telefon z wybranym w liscie urzadzeniem.
-        if(!my_Bluetooth_Adapter.isEnabled())
-        {
+        if (!my_Bluetooth_Adapter.isEnabled()) {
             TextView TV_Status_Connect = findViewById(R.id.Text_View_Connect);
             TV_Status_Connect.setText("Włącz Bluetooth");
-        }
-        else
-        {
+        } else {
             TextView TV_Status_Connect = findViewById(R.id.Text_View_Connect);
             TV_Status_Connect.setText("Łączenie bluetooth");
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            createConnectThread = new CreateConnectThread(bluetoothAdapter,deviceAddress);
+            createConnectThread = new CreateConnectThread(bluetoothAdapter, deviceAddress);
             createConnectThread.start();
         }
     }
@@ -342,87 +379,43 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         Button calibration = findViewById(R.id.button_Kalibracja);
         Button connect = findViewById(R.id.button_connect_bluetooth);
         Button refresh = findViewById(R.id.button_refresh_b);
+        TextView tv1 = findViewById(R.id.textView_Refresh_info);
+        TextView tv2 = findViewById(R.id.textView2);
+        TextView tv3 = findViewById(R.id.textView3);
+        TextView tv4 = findViewById(R.id.textView4);
 
         if (LANGUAGE_TYPE.equals("polish")) {
             calibration.setText("Calibration");
             connect.setText("Connect");
             refresh.setText("Refresh List");
+            tv1.setText("Refresh list of paired devices");
+            tv2.setText("Choose the device you want to connect to");
+            tv3.setText("Connect to picked device");
+            tv4.setText("Calibrate your device");
         }
         if (LANGUAGE_TYPE.equals("english")) {
             calibration.setText("Kalibracja");
             connect.setText("Połącz");
             refresh.setText("Odśwież Listę");
+            tv1.setText("Odświerz listę sparowanych urzadzeń");
+            tv2.setText("Wybierz urządzenie z listy, z którym chcesz się połączyć");
+            tv3.setText("Połącz się z wybranym urzadzeniem");
+            tv4.setText("Przeprowadź kalibrację urzadzenia");
         }
 
     }
 
-    public void LoadPreferences()
-    {
+    public void LoadPreferences() {
         SharedPreferences sharedPref = getSharedPreferences(PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        LANGUAGE_TYPE = sharedPref.getString(LANGUAGE,"english");
+        LANGUAGE_TYPE = sharedPref.getString(LANGUAGE, "english");
+        CHOOSEN_GOAL = sharedPref.getInt(GOAL, 100000);
     }
-    @Override
-    public void onBackPressed() {}
+    //@Override
+    //public void onBackPressed() {}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    ////////////////////////////Bluetooth łączenie//////////////////////////////////////////////
-    public class CreateConnectThread extends Thread {
-
-
-        public CreateConnectThread(BluetoothAdapter bluetoothAdapter, String address) //Konstruktor klasy tworzy obiekt BluetoothDevice reprezentujacy urzadzenie, z którym łaczy sie smartfon. Rozpoczyna równiez tworzenie socketa oraz pobiera UUID z BluetoothDevice. Tworzy socket i przypisuje go do zmiennej miedzyklasowej.
-        {
-            BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
-            BluetoothSocket tmp = null;
-            UUID uuid = bluetoothDevice.getUuids()[0].getUuid();                                                                           //uzyskanie Uuid urzadzenia
-            try{
-                tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);                                                     //utworzenie socketa
-
-            }
-            catch (IOException e) {
-                Log.e(TAG, "Socket's create() method failed", e);
-            }
-            mmSocket = tmp;
-        }
-
-        public void run() //Działajaca w tle programu metoda tworzy obiekt BluetoothAdapter w celu zakonczenia potencjalnego skanu, który mógłby spowodowac przerwanie połaczenia. Nastepnie rozpoczyna próbe połaczenia sie z Rejestratorem w wypadku niepowodzenia zamyka socket i wysyła wiadomosc o niepowodzeniu do głównej petli programu. W przeciwnym wypadku wysyła wiadomosc o powodzeniu operacji połaczenia i inicjalizuje obiekt klasy ConecctedThread
-        {
-            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            bluetoothAdapter.cancelDiscovery();
-            try{
-                mmSocket.connect();
-                Log.e("Status", "Device connected");
-                handler.obtainMessage(CONNECTING_STATUS, 1, -1).sendToTarget();
-            }
-            catch (IOException connectException)
-            {
-                try{
-                    mmSocket.close();
-                    Log.e("Status", "Cannot connect to device");
-                    handler.obtainMessage(CONNECTING_STATUS, -1, -1).sendToTarget();
-                }
-                catch(IOException closeException)
-                {
-                    Log.e(TAG, "Could not close the client socket", closeException);
-                }
-                return;
-            }
-            connectedThread = new ConnectedThread(mmSocket);
-            connectedThread.run();
-        }
-
-        public void cancel() {//Metoda zamykajaca socket połaczenia.
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Could not close the client socket", e);
-            }
-        }
-
-    }
 
     public static class ConnectedThread extends Thread {
 
@@ -437,11 +430,13 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
+
         public void run() { //Działajaca w tle programu metoda wyczekuje na otrzymanie wiadomosci z modułu rejestratora. Po otrzymaniu wiadomosci odbiera ja i przypisuje do zmiennej typu String. Nastepnie wysyła ja do głównej klasy programu.
             byte[] buffer = new byte[1024];  // buffer store for the stream
             int bytes = 0; // bytes returned from read()
@@ -450,11 +445,11 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
 
                     buffer[bytes] = (byte) mmInStream.read();
                     String readMessage;
-                    if (buffer[bytes] == '\n'){
-                        readMessage = new String(buffer,0,bytes);
-                        Log.e("Arduino Message",readMessage);
-                        text3=readMessage;
-                        handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
+                    if (buffer[bytes] == '\n') {
+                        readMessage = new String(buffer, 0, bytes);
+                        Log.e("Arduino Message", readMessage);
+                        text3 = readMessage;
+                        handler.obtainMessage(MESSAGE_READ, readMessage).sendToTarget();
                         bytes = 0;
                     } else {
                         bytes++;
@@ -471,15 +466,71 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             try {
                 mmOutStream.write(bytes);
             } catch (IOException e) {
-                Log.e("Send Error","X",e);
+                Log.e("Send Error", "X", e);
             }
         }
 
         public void cancel() { //Metoda zamykajaca socket połaczenia.
             try {
                 mmSocket.close();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+            }
+
         }
+
+        public boolean Connection_Status() {
+            return mmSocket.isConnected();
+        }
+    }
+
+    ////////////////////////////Bluetooth łączenie//////////////////////////////////////////////
+    public class CreateConnectThread extends Thread {
+
+
+        public CreateConnectThread(BluetoothAdapter bluetoothAdapter, String address) //Konstruktor klasy tworzy obiekt BluetoothDevice reprezentujacy urzadzenie, z którym łaczy sie smartfon. Rozpoczyna równiez tworzenie socketa oraz pobiera UUID z BluetoothDevice. Tworzy socket i przypisuje go do zmiennej miedzyklasowej.
+        {
+            BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
+            BluetoothSocket tmp = null;
+            UUID uuid = bluetoothDevice.getUuids()[0].getUuid();                                                                           //uzyskanie Uuid urzadzenia
+            try {
+                tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);                                                     //utworzenie socketa
+
+            } catch (IOException e) {
+                Log.e(TAG, "Socket's create() method failed", e);
+            }
+            mmSocket = tmp;
+        }
+
+        public void run() //Działajaca w tle programu metoda tworzy obiekt BluetoothAdapter w celu zakonczenia potencjalnego skanu, który mógłby spowodowac przerwanie połaczenia. Nastepnie rozpoczyna próbe połaczenia sie z Rejestratorem w wypadku niepowodzenia zamyka socket i wysyła wiadomosc o niepowodzeniu do głównej petli programu. W przeciwnym wypadku wysyła wiadomosc o powodzeniu operacji połaczenia i inicjalizuje obiekt klasy ConecctedThread
+        {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            bluetoothAdapter.cancelDiscovery();
+            try {
+                mmSocket.connect();
+                Log.e("Status", "Device connected");
+                handler.obtainMessage(CONNECTING_STATUS, 1, -1).sendToTarget();
+            } catch (IOException connectException) {
+                try {
+                    mmSocket.close();
+                    Log.e("Status", "Cannot connect to device");
+                    handler.obtainMessage(CONNECTING_STATUS, -1, -1).sendToTarget();
+                } catch (IOException closeException) {
+                    Log.e(TAG, "Could not close the client socket", closeException);
+                }
+                return;
+            }
+            connectedThread = new ConnectedThread(mmSocket);
+            connectedThread.run();
+        }
+
+        public void cancel() {//Metoda zamykajaca socket połaczenia.
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the client socket", e);
+            }
+        }
+
     }
     /*@Override
     public void onBackPressed() { //Metoda konczaca połaczenie w wypadku zamkniecia aplikacji.
