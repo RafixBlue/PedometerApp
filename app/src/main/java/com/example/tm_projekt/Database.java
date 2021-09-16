@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
 
-    //Todo: Add Monthly and Daily step counts
+
 
     public Database(Context context) {
         super(context, "BazaDanych5.db", null, 1);
@@ -27,7 +27,7 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("drop Table if exists Parameters");
     }
 
-    public boolean insert(String day, String month, String year)//Tworzy w tabeli Walk zapis z danego dnia wypełniajac pola data, dzien, miesiac, rok. Pozostałe 96 rekordów odpowiadajacych ilosci kroków w danym kwadransie wypełnia zerami.
+    public boolean insert(String day, String month, String year)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues CV = new ContentValues();
@@ -64,7 +64,7 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public boolean insert_AVG(String ID, String AVG)//Tworzy w tabeli Parameters wpis z kalibracji. Wpisuje nazwe uzytkownika oraz przypisuje wartosc zero w miejsce wartosci kalibracji.
+    public boolean insert_AVG(String ID, String AVG)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues CV = new ContentValues();
@@ -77,7 +77,7 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public boolean replace(String day, String month, String year, String minutes, String hours, String steps)//Wpisuje do stworzonego wczesniej wpisu w tabeli Walk wartosc z ostatniego otrzymanego pomiaru kroków. Miejsce w tabeli, do którego wpisywana jest wartosc zalezy od godziny otrzymania pomiaru.
+    public boolean replace(String day, String month, String year, String minutes, String hours, String steps)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues CV = new ContentValues();
@@ -93,7 +93,7 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public boolean replace_AVG(String AVG)//Aktualizuje w bazie wynik kalibracji poprzez zastapienie starego nowym.
+    public boolean replace_AVG(String AVG)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues CV = new ContentValues();
@@ -106,7 +106,7 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public boolean replace_kroki(String kroki)//Aktualizuje w bazie wynik kalibracji poprzez zastapienie starego nowym.
+    public boolean replace_kroki(String kroki)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues CV = new ContentValues();
@@ -119,7 +119,7 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public boolean replace_day(String day, String month, String year, String minutes, String hours, String steps, String goal)//Wpisuje do stworzonego wczesniej wpisu w tabeli Walk wartosc z ostatniego otrzymanego pomiaru kroków. Miejsce w tabeli, do którego wpisywana jest wartosc zalezy od godziny otrzymania pomiaru.
+    public boolean replace_day(String day, String month, String year, String minutes, String hours, String steps, String goal)
     {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -135,42 +135,42 @@ public class Database extends SQLiteOpenHelper {
         return resoult != -1;
     }
 
-    public Cursor getdata()//Odczytuje wartosc kalibracji(AVG MAX) zapisanej w tabeli Parameters i wpisuje ja do zmiennej.
+    public Cursor getdata()
     {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select AVG_MAX from Parameters", null);
         return cursor;
     }
 
-    public Cursor getdatafile(String date)//Tworzy liste na podstawie danych zamieszczonych w tabeli Walk. Lista zawiera pomiary z wybranego dnia.
+    public Cursor getdatafile(String date)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select * from Walk Where Date =?  Group by Date", new String[]{date});
         return cursor;
     }
 
-    public Cursor get_daysteps(String date)//Tworzy liste na podstawie danych zamieszczonych w tabeli Walk. Lista zawiera pomiary z wybranego dnia.
+    public Cursor get_daysteps(String date)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select Steps_Day from Walk Where Date =?  Group by Date", new String[]{date});
         return cursor;
     }
 
-    public Cursor get_goal(String date)//Tworzy liste na podstawie danych zamieszczonych w tabeli Walk. Lista zawiera pomiary z wybranego dnia.
+    public Cursor get_goal(String date)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select Steps_Goal from Walk Where Date =?  Group by Date", new String[]{date});
         return cursor;
     }
 
-    public Cursor get_daysteps_month(String day, String month, String year)//Tworzy liste na podstawie danych zamieszczonych w tabeli Walk. Lista zawiera pomiary z wybranego dnia.
+    public Cursor get_daysteps_month(String day, String month, String year)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("Select Steps_Day from Walk Where Day =? and Month =? and Year =?  Group by Date", new String[]{day, month, year});
         return cursor;
     }
 
-    public Cursor get_steps()//Tworzy liste na podstawie danych zamieszczonych w tabeli Walk. Lista zawiera pomiary z wybranego dnia.
+    public Cursor get_steps()
     {
         String user = "User";
         SQLiteDatabase db = this.getWritableDatabase();

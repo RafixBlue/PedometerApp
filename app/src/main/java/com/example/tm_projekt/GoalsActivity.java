@@ -19,9 +19,6 @@ import java.util.Date;
 
 public class GoalsActivity extends AppCompatActivity {
 
-    //Todo: Add Monthly step goals
-    //Todo: Read number of steps
-
     public static final String PREFERENCES = "preferences";
     public static final String LANGUAGE = "language";
     public static final String GOAL = "goal";
@@ -113,11 +110,20 @@ public class GoalsActivity extends AppCompatActivity {
         buffer.put(res.getInt(res.getColumnIndex("Steps_Day")));
         String notification_text = buffer.get(0) + "/";
 
+        String text = "Progress:";
+        if(LANGUAGE_TYPE.equals("polish"))
+        {
+            text = "Progress:";
+        }
+        if(LANGUAGE_TYPE.equals("english"))
+        {
+            text = "Wykonano:";
+        }
         Notification notification = new NotificationCompat.Builder(this, "ChannelID")
-                .setContentTitle("Progress:")
+                .setContentTitle(text)
                 .setContentText(notification_text + CHOOSEN_GOAL)
                 .setSmallIcon(R.mipmap.ic_launcher).build();
-        //.setContentIntent(pendingintent).build();
+
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(1, notification);

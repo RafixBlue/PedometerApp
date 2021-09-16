@@ -61,16 +61,16 @@ public class WeatherActivity extends AppCompatActivity {
         Button refresh = findViewById(R.id.button_refresh);
 
         if (LANGUAGE_TYPE.equals("polish")) {
-            temp.setText("Temperature");
-            humi.setText("Humidity");
-            press.setText("Pressure");
+            temp.setText("Temperature(C)");
+            humi.setText("Humidity(%)");
+            press.setText("Pressure(hPa)");
             time.setText("Measurement Time:");
             refresh.setText("Refresh");
         }
         if (LANGUAGE_TYPE.equals("english")) {
-            temp.setText("Temperatura");
-            humi.setText("Wilgotność");
-            press.setText("Ciśnienie");
+            temp.setText("Temperatura(C)");
+            humi.setText("Wilgotność(%)");
+            press.setText("Ciśnienie(hPa)");
             time.setText("Pomiar Wykonano:");
             refresh.setText("Odśwież");
         }

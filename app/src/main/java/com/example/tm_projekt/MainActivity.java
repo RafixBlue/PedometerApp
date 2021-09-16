@@ -14,9 +14,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    //Todo: Fix design
-    //Todo: Night Mode
-    //Todo: Languages
+
 
     public static final String PREFERENCES = "preferences";
     public static final String LANGUAGE = "language";

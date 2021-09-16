@@ -37,7 +37,7 @@ import static android.content.ContentValues.TAG;
 
 public class BluetoothActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    //Todo: Connection check when weather check
+
 
     public static final int BLUETOOTH_REQ_CODE = 1;
     public static final String PREFERENCES = "preferences";
@@ -70,7 +70,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     private String deviceAddress; //adres wybranego urządzenia
     private final Runnable mToastRunnable = new Runnable() {
         @Override
-        public void run() {//Metoda nieustannie działajaca w tle aplikacji. Co pietnascie minut wysyła do Rejestratora prosbe o wysłanie wyniku pomiaru kroków jednoczesnie sprawdzajac czy urzadzenie odpowiedziało na wiadomosc. Jezeli nie odpowiedziało to w textboxie wyswietlany jest komunikat o utraconym połaczeniu. Metoda jest odpowiedzialna równiez za odczytanie z tabeli Parameters w bazie danych informacji o wyniku poprzedniej kalibracji i wysłanie jej do Rejestratora.
+        public void run() {
 
             SimpleDateFormat formatter = new SimpleDateFormat("mm");
 
@@ -94,7 +94,14 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             if (previous_connection_status == true) {
                 if (connectedThread.Connection_Status() != previous_connection_status) {
                     TextView tv_connection = findViewById(R.id.Text_View_Connect);
-                    tv_connection.setText("Utracono połączenie " + deviceName); //TODO notification about lost connection
+                    if(LANGUAGE_TYPE.equals("polish"))
+                    {
+                        tv_connection.setText("Lost connection " + deviceName);
+                    }
+                    if(LANGUAGE_TYPE.equals("english"))
+                    {
+                        tv_connection.setText("Utracono połączenie " + deviceName);
+                    }
                 }
                 previous_connection_status = connectedThread.Connection_Status();
             }
@@ -166,14 +173,25 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             public void handleMessage(Message msg) {//Obiekt odpowiedzialny za odczytywanie wiadomosci przekazywanych przez watki. Odbiera informacje o statusie połaczenia(czy udało sie je uzyskac czy nie) i wyswietla ja w odpowiednim textboxie. Ta metoda równiez odczytuje wiadomosci zawierajace wyniki pomiarów kroków i kalibracji, po odczytaniu zapisuje je w bazie danych.
                 switch (msg.what) {
                     case CONNECTING_STATUS:
-                        //TODO Languages
+
                         switch (msg.arg1) {
                             case 1:
-                                tv_connection.setText("Połączono z " + deviceName);
+                                if (LANGUAGE_TYPE.equals("polish")) {
+                                    tv_connection.setText("Connected to " + deviceName);
+                                }
+                                if (LANGUAGE_TYPE.equals("english")) {
+                                    tv_connection.setText("Połączono z " + deviceName);
+                                }
+
                                 conection_avg = true;
                                 break;
                             case -1:
-                                tv_connection.setText("Nie udało się uzyskać połączenia");
+                                if (LANGUAGE_TYPE.equals("polish")) {
+                                    tv_connection.setText("Failed to connect");
+                                }
+                                if (LANGUAGE_TYPE.equals("english")) {
+                                    tv_connection.setText("Nie udało się uzyskać połączenia");
+                                }
                                 break;
                         }
                         break;
@@ -198,7 +216,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                                     tv_calibration.setText("Zakończono kalibrację");
                                 }
 
-                                //ToDo language
+
                                 db.replace_AVG(sarduinoMsg.substring(3, 6));
                             }
 
@@ -218,17 +236,16 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
 
                                 minutes_time_now = round_quarter_minute(Integer.parseInt(minutes_time_now));
 
-                                //convert_to_quarter_minutes
+
 
                                 db.replace(day_time_now, month_time_now, year_time_now, minutes_time_now, hours_time_now, sarduinoMsg.substring(3));
 
-                                //SimpleDateFormat formatter_X = new SimpleDateFormat("yyyy_MM_dd");
+
 
                                 Cursor res = db.get_daysteps(new SimpleDateFormat("yyyy_MM_dd").format(now));
                                 res.moveToFirst();
                                 String steps = res.getString(res.getColumnIndex("Steps_Day"));
-                                //int isteps =0;
-                                //System.out.println(sarduinoMsg.substring(3));
+
 
                                 int isteps = Integer.parseInt(steps);
 
@@ -244,9 +261,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                                     isteps = steps2;
                                 }
 
-                                //TODO: różne wersje językowe napisów in replace add goal
-
-                                //System.out.println(String.valueOf(isteps));
 
                                 db.replace_day(day_time_now, month_time_now, year_time_now, minutes_time_now, hours_time_now, String.valueOf(isteps), String.valueOf(CHOOSEN_GOAL));
 
@@ -311,7 +325,6 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
                 .setContentTitle(text)
                 .setContentText(steps_day + "/" + CHOOSEN_GOAL)
                 .setSmallIcon(R.mipmap.ic_launcher).build();
-        //.setContentIntent(pendingintent).build();
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(1, notification);
@@ -325,7 +338,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         Timer.removeCallbacks(mToastRunnable);
     }
 
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {//Odczytuje nazwe i adres sparowanego urzadzenia wybranego z listy i zapisuje je do odpowiednich zmiennych.
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         deviceAddress = spinner_bluetooth_adress.get(position);
         deviceName = spinner_bluetooth_name.get(position);
     }
@@ -333,7 +346,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    public void RefreshList_Click(View view) {//Odswieza lub uzupełnia liste sparowanych urzadzen.
+    public void RefreshList_Click(View view) {
         Set<BluetoothDevice> paired_Devices = my_Bluetooth_Adapter.getBondedDevices();
         Spinner spin = findViewById(R.id.spinner);
         spin.setAdapter(null);
@@ -349,19 +362,29 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
 
     }
 
-    public void Calibration_Click(View view) {//Przesyła wiadomosc do Rejestratora, która rozpoczyna kalibracje.
+    public void Calibration_Click(View view) {
 
         TextView tv = findViewById(R.id.kalibracja_textview);
         try {
             connectedThread.write("1");
-            tv.setText("Rozpoczeto kalibracje!");
+            if (LANGUAGE_TYPE.equals("polish")) {
+                tv.setText("Calibration Started");
+            }
+            if (LANGUAGE_TYPE.equals("english")) {
+                tv.setText("Rozpoczeto kalibracje!");
+            }
 
         } catch (Exception e) {
-            tv.setText("Błąd kalibracji");
+            if (LANGUAGE_TYPE.equals("polish")) {
+                tv.setText("Calibration Error");
+            }
+            if (LANGUAGE_TYPE.equals("english")) {
+                tv.setText("Błąd kalibracji");
+            }
         }
     }
 
-    public void Connect_Click(View view) {//Łaczy telefon z wybranym w liscie urzadzeniem.
+    public void Connect_Click(View view) {
         if (!my_Bluetooth_Adapter.isEnabled()) {
             TextView TV_Status_Connect = findViewById(R.id.Text_View_Connect);
             TV_Status_Connect.setText("Włącz Bluetooth");
@@ -412,6 +435,12 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         LANGUAGE_TYPE = sharedPref.getString(LANGUAGE, "english");
         CHOOSEN_GOAL = sharedPref.getInt(GOAL, 100000);
     }
+
+    public void cancel(View view) {
+        try {
+        connectedThread.cancel();
+    } finally{}
+    }
     //@Override
     //public void onBackPressed() {}
 
@@ -423,7 +452,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
-        public ConnectedThread(BluetoothSocket socket) {//Konstruktor klasy odbiera obiekt socketa z klasy CreateConnectThread. Tworzy strumienie przesyłu danych
+        public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
@@ -437,7 +466,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             mmOutStream = tmpOut;
         }
 
-        public void run() { //Działajaca w tle programu metoda wyczekuje na otrzymanie wiadomosci z modułu rejestratora. Po otrzymaniu wiadomosci odbiera ja i przypisuje do zmiennej typu String. Nastepnie wysyła ja do głównej klasy programu.
+        public void run() {
             byte[] buffer = new byte[1024];  // buffer store for the stream
             int bytes = 0; // bytes returned from read()
             while (true) {
@@ -487,7 +516,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public class CreateConnectThread extends Thread {
 
 
-        public CreateConnectThread(BluetoothAdapter bluetoothAdapter, String address) //Konstruktor klasy tworzy obiekt BluetoothDevice reprezentujacy urzadzenie, z którym łaczy sie smartfon. Rozpoczyna równiez tworzenie socketa oraz pobiera UUID z BluetoothDevice. Tworzy socket i przypisuje go do zmiennej miedzyklasowej.
+        public CreateConnectThread(BluetoothAdapter bluetoothAdapter, String address)
         {
             BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
             BluetoothSocket tmp = null;
@@ -501,7 +530,7 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             mmSocket = tmp;
         }
 
-        public void run() //Działajaca w tle programu metoda tworzy obiekt BluetoothAdapter w celu zakonczenia potencjalnego skanu, który mógłby spowodowac przerwanie połaczenia. Nastepnie rozpoczyna próbe połaczenia sie z Rejestratorem w wypadku niepowodzenia zamyka socket i wysyła wiadomosc o niepowodzeniu do głównej petli programu. W przeciwnym wypadku wysyła wiadomosc o powodzeniu operacji połaczenia i inicjalizuje obiekt klasy ConecctedThread
+        public void run()
         {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             bluetoothAdapter.cancelDiscovery();

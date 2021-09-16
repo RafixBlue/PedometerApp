@@ -150,15 +150,15 @@ public class GraphActivity extends AppCompatActivity {
                 SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
                 String time_bar_time_format = formatter.format(test);
 
-                //Todo: Dopracować języki
+
                 //Toast.makeText(getApplicationContext(), "Series1: On Data Point clicked: " + time_bar_time_format + " " + dataPoint.getY(), Toast.LENGTH_SHORT).show();
 
                 if (LANGUAGE_TYPE.equals("polish")) {
-                    Toast.makeText(getApplicationContext(), "At " + time_bar_time_format + " you made " + (int) dataPoint.getY() + " steps.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "At " + time_bar_time_format + " you made " + (int) dataPoint.getY() + " steps(" + 0.5*(int) dataPoint.getY() + "m) and burned around " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
 
                 if (LANGUAGE_TYPE.equals("english")) {
-                    Toast.makeText(getApplicationContext(), "O godzinie " + time_bar_time_format + " zrobiono " + (int) dataPoint.getY() + " kroków.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "O godzinie " + time_bar_time_format + " zrobiono " + (int) dataPoint.getY() + " kroków(."+ 0.5*(int) dataPoint.getY() + "m) i spalono około " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -281,11 +281,11 @@ public class GraphActivity extends AppCompatActivity {
             @Override
             public void onTap(Series series, DataPointInterface dataPoint) {
                 if (LANGUAGE_TYPE.equals("polish")) {
-                    Toast.makeText(getApplicationContext(), "On day " + (int) dataPoint.getX() + "." + date_month + " your goal was to make " + (int) dataPoint.getY() + " steps.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "On day " + (int) dataPoint.getX() + "." + date_month + " your goal was to make " + (int) dataPoint.getY() + " steps(" + 0.5*(int) dataPoint.getY() + "m) and burned around " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
 
                 if (LANGUAGE_TYPE.equals("english")) {
-                    Toast.makeText(getApplicationContext(), "Dnia " + (int) dataPoint.getX() + "." + date_month + " twoim celem było zrobić " + (int) dataPoint.getY() + " kroków.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Dnia " + (int) dataPoint.getX() + "." + date_month + " twoim celem było zrobić " + (int) dataPoint.getY() + " kroków(."+ 0.5*(int) dataPoint.getY() + "m) i spalić około " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -296,11 +296,11 @@ public class GraphActivity extends AppCompatActivity {
             public void onTap(Series series, DataPointInterface dataPoint) {
 
                 if (LANGUAGE_TYPE.equals("polish")) {
-                    Toast.makeText(getApplicationContext(), "On day " + (int) dataPoint.getX() + "." + date_month + " you made " + (int) dataPoint.getY() + " steps.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "On day " + (int) dataPoint.getX() + "." + date_month + " you made " + (int) dataPoint.getY() + " steps(" + 0.5*(int) dataPoint.getY() + "m) and burned around " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
 
                 if (LANGUAGE_TYPE.equals("english")) {
-                    Toast.makeText(getApplicationContext(), "Dnia " + (int) dataPoint.getX() + "." + date_month + " zrobiono " + (int) dataPoint.getY() + " kroków.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Dnia " + (int) dataPoint.getX() + "." + date_month + " zrobiono " + (int) dataPoint.getY() + " kroków(."+ 0.5*(int) dataPoint.getY() + "m) i spalono około " + (float) (dataPoint.getY() * 0.044) + " kcal.", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -339,7 +339,7 @@ public class GraphActivity extends AppCompatActivity {
 
         try {
             temp_db.insert(date_day, date_month, date_year);
-            temp_db.replace_day(date_day, date_month, date_year, "00", "00", "6900", "10000");
+            temp_db.replace_day(date_day, date_month, date_year, "00", "00", "1634", "10000");
             temp_db.replace(date_day, date_month, date_year, "00", "00", "22");
             temp_db.replace(date_day, date_month, date_year, "15", "00", "23");
             temp_db.replace(date_day, date_month, date_year, "30", "00", "435");
@@ -348,17 +348,17 @@ public class GraphActivity extends AppCompatActivity {
             temp_db.replace(date_day, date_month, date_year, "00", "02", "322");
             temp_db.replace(date_day, date_month, date_year, "00", "03", "242");
             temp_db.replace(date_day, date_month, date_year, "00", "04", "242");
-            temp_db.replace(date_day, date_month, date_year, "00", "05", "242");
+            temp_db.replace(date_day, date_month, date_year, "00", "05", "654");
             temp_db.replace(date_day, date_month, date_year, "00", "06", "242");
             temp_db.replace(date_day, date_month, date_year, "00", "07", "242");
             temp_db.replace(date_day, date_month, date_year, "00", "10", "242");
-            temp_db.replace(date_day, date_month, date_year, "00", "12", "242");
-            temp_db.replace(date_day, date_month, date_year, "00", "14", "242");
+            temp_db.replace(date_day, date_month, date_year, "00", "12", "823");
+            temp_db.replace(date_day, date_month, date_year, "00", "14", "542");
             temp_db.replace(date_day, date_month, date_year, "00", "16", "242");
-            temp_db.replace(date_day, date_month, date_year, "00", "18", "242");
+            temp_db.replace(date_day, date_month, date_year, "00", "18", "432");
             temp_db.replace(date_day, date_month, date_year, "00", "20", "242");
             temp_db.replace(date_day, date_month, date_year, "00", "22", "242");
-            temp_db.replace(date_day, date_month, date_year, "00", "23", "242");
+            temp_db.replace(date_day, date_month, date_year, "00", "23", "232");
         } catch (Exception e) {
         }
     }
@@ -488,7 +488,7 @@ public class GraphActivity extends AppCompatActivity {
                     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
                     String time_bar_time_format = formatter.format(test);
 
-                    //Todo: Dopracować języki
+
                     Toast.makeText(getApplicationContext(), "Series1: On Data Point clicked: " + time_bar_time_format + " " + dataPoint.getY(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -554,7 +554,7 @@ public class GraphActivity extends AppCompatActivity {
                     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
                     String time_bar_time_format = formatter.format(test);
 
-                    //Todo: Dopracować 2 języki
+
                     Toast.makeText(getApplicationContext(), "Series1: On Data Point clicked: " + dataPoint.getX() + " " + dataPoint.getY(), Toast.LENGTH_SHORT).show();
                 }
             });

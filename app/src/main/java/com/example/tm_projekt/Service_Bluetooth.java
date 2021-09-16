@@ -50,10 +50,21 @@ public class Service_Bluetooth extends Service {
             notification_text = buffer.get(0) + "/";
         }
 
+        String text = "Progress:";
+        if(LANGUAGE_TYPE.equals("polish"))
+        {
+            text = "Progress:";
+        }
+        if(LANGUAGE_TYPE.equals("english"))
+        {
+            text = "Wykonano:";
+        }
+
         Notification notification = new NotificationCompat.Builder(this, "ChannelID")
-                .setContentTitle("Progress: ")
+                .setContentTitle(text)
                 .setContentText((notification_text + CHOOSEN_GOAL))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_name)
+
                 .setContentIntent(pendingintent).build();
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
